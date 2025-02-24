@@ -29,7 +29,7 @@ class CustomGraphDataset(InMemoryDataset):
         edge_index = torch.tensor(edges.iloc[:, 0:2].values.T, dtype=torch.long)
         edge_attr = torch.tensor(edges.iloc[:, 2:4].values, dtype=torch.float)
         assert edge_index.min() >= 0, f"无效节点编号：{edge_index.min().item()}"
-        
+        assert edge_index.max() < x.shape[0], f"Invalid edge index: {edge_index.max().item()}"
 
         data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
         data_list = [data]
