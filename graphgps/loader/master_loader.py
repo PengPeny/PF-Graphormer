@@ -1,5 +1,5 @@
 import logging
-import os.path as osp
+import os
 import time
 from functools import partial
 
@@ -99,7 +99,7 @@ def load_dataset_master(format, name, dataset_dir):
     """
     if format.startswith('PyG-'):
         pyg_dataset_id = format.split('-', 1)[1]
-        dataset_dir = osp.join(dataset_dir, pyg_dataset_id)
+        dataset_dir = os.path.join(dataset_dir, pyg_dataset_id)
 
         if pyg_dataset_id == 'Actor':
             if name != 'none':
@@ -145,9 +145,12 @@ def load_dataset_master(format, name, dataset_dir):
             raise ValueError(f"Unexpected PyG Dataset identifier: {format}")
 
     # GraphGym default loader for Pytorch Geometric datasets
+    #elif format == 'PyG':
+        #dataset = load_pyg(name, dataset_dir)
     elif format == 'PyG':
-        dataset = load_pyg(name, dataset_dir)
-
+        if name == 'custom':
+            dataset = preformat_custom(dataset_dir, name)
+            
     elif format == 'OGB':
         if name.startswith('ogbg'):
             dataset = preformat_OGB_Graph(dataset_dir, name.replace('_', '-'))
@@ -174,6 +177,9 @@ def load_dataset_master(format, name, dataset_dir):
 
         elif name.startswith('PCQM4Mv2Contact-'):
             dataset = preformat_PCQM4Mv2Contact(dataset_dir, name)
+
+        #elif name == 'custom':
+            #dataset = preformat_custom(dataset_dir, name)
 
         else:
             raise ValueError(f"Unsupported OGB(-derived) dataset: {name}")
@@ -317,6 +323,11 @@ def preformat_MalNetTiny(dataset_dir, feature_set):
 
     return dataset
 
+def preformat_custom(dataset_dir, name):
+    from graphgps.loader.dataset.custom import CustomGraphDataset
+    dataset_dir = os.path.join(dataset_dir, name)
+    dataset = CustomGraphDataset(dataset_dir)
+    return dataset
 
 def preformat_OGB_Graph(dataset_dir, name):
     """Load and preformat OGB Graph Property Prediction datasets.
